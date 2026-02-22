@@ -18,6 +18,8 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      entrypoint: ${{ steps.productioncode.outputs.JS-entrypoint}}
     steps:
       - name: Get code
         uses: actions/checkout@v3
@@ -25,6 +27,9 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
+      - name: Get entry point index file
+        id: productioncode
+        run: find dist/assets/*.js -type f -execdir echo 'JS-entrypoint={}' >> $GITHUB_OUTPUT ';'
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
         with:
@@ -40,5 +45,7 @@ jobs:
           name: built-output
       - name: output content
         run: ls
+      - name: Entry point file name
+        run: echo "${{needs.build.outputs.entrypoint}}"
       - name: Deploy
         run: echo "Deploying..."
